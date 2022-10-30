@@ -1,0 +1,3 @@
+hostNames:
+  - localhost
+port: 8081

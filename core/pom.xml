@@ -66,18 +66,24 @@
         <jib-maven-plugin.version>3.2.1</jib-maven-plugin.version>
     </properties>
     <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>${jib-maven-plugin.version}</version>
                 <configuration>
-                    <from>
-                        <image>openjdk:11</image>
-                    </from>
                     <to>
-                        <image>gcr.io/${env.GOOGLE_PROJECT_ID}/${project.artifactId}</image>
+                        <tags>${project.version}</tags>
                     </to>
+                    <container>
+                        <mainClass>v2.GatewayApplication</mainClass>
+                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                    </container>
                 </configuration>
             </plugin>
         </plugins>

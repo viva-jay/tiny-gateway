@@ -1,0 +1,89 @@
+steps:
+#    after every run instance run k6
+#  - name: gcr.io/cloud-builders/docker
+#    args: [
+#        'run',
+#        '--rm',
+#        '-v','/workspace/.cloud-build/k6/scripts:/scripts',
+#        '--env','K6_CLOUD_TOKEN=${_K6_CLOUD_TOKEN}',
+#        '--env','SREQ_DURATION_THRESHOLDS=300',
+#        'gcr.io/$PROJECT_ID/k6:latest',
+#        'run',
+#             '--no-connection-reuse',
+#             '--insecure-skip-tls-verify',
+#             '--no-teardown',
+#             '--no-thresholds',
+#             '--no-setup',
+#             '--no-usage-report',
+#             '--quiet',
+#             '--out',
+#             'cloud',
+#             '/scripts/script.js'
+#    ]
+#    dir: '.cloud-build/k6'
+
+##  build docker image(k6)
+#  - name: gcr.io/cloud-builders/docker
+#    args: [
+#      'build',
+#      '-t', 'gcr.io/$PROJECT_ID/k6',
+#      '--cache-from', 'gcr.io/$PROJECT_ID/k6',
+#      '.'
+#    ]
+#    dir: '.cloud-build/k6'
+#    id: 'build-k6'
+#
+#  - name: gcr.io/cloud-builders/gcloud
+#    entrypoint: /bin/bash
+#    args:
+#      - '-c'
+#      - |
+#        curl mock-http-mv-2
+#        gcloud compute instances create-with-container ${_SERVICE}-vm --quiet \
+#              --zone=${_SERVICE_ZONE} \
+#              --machine-type=${_MACHINE_TYPE} \
+#              --image-project=cos-cloud \
+#              --image-family=cos-97-lts \
+#              --container-image=gcr.io/$PROJECT_ID/${_SERVICE} \
+#              --container-restart-policy=never \
+#              --tags ${_NETWORK_TAG} \
+#              --container-env=K6_CLOUD_TOKEN=${_K6_CLOUD_TOKEN},SREQ_DURATION_THRESHOLDS=300 \
+#              --container-arg="run" \
+#              --container-arg="--no-connection-reuse" \
+#              --container-arg="--insecure-skip-tls-verify" \
+#              --container-arg="--no-thresholds" \
+#              --container-arg="--no-teardown" \
+#              --container-arg="--out=cloud" \
+#              --container-arg="/scripts/script.js"
+#    waitFor: ['build-k6']
+
+#  - name: gcr.io/$PROJECT_ID/remote-builder
+#    env:
+#      - INSTANCE_ARGS=--image-project cos-cloud --image-family cos-stable --machine-type ${_MACHINE_TYPE}
+#      - USERNAME=673449402901-compute
+#      - RETRIES=3
+#      - COMMAND=docker run --rm
+#        -v /home/673449402901-compute/workspace/.cloud-build/k6/scripts:/scripts
+#        -e K6_CLOUD_TOKEN=${_K6_CLOUD_TOKEN}
+#        -e SREQ_DURATION_THRESHOLDS=300
+#        docker.io/grafana/k6:latest run --no-connection-reuse
+#        --insecure-skip-tls-verify
+#        --no-teardown
+#        --no-thresholds
+#        --no-setup
+#        --no-usage-report
+#        --quiet
+#        --out cloud
+#        /scripts/script.js
+
+#images:
+#  - 'gcr.io/$PROJECT_ID/k6'
+
+substitutions:
+  _SERVICE: 'k6'
+  _SERVICE_ZONE: 'us-central1-c'
+  _MACHINE_TYPE: 'e2-standard-2'
+  _NETWORK_TAG: 'load-test'
+
+options:
+  machineType: 'E2_HIGHCPU_8'

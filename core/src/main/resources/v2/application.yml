@@ -1,0 +1,4 @@
+hostNames:
+  - mock-http-vm-1
+  - mock-http-vm-1
+port: 80

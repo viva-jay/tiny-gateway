@@ -1,0 +1,102 @@
+version: '3.4'
+
+services:
+  influxdb:
+    image: influxdb:2.4
+    container_name: influxdb
+    privileged: true
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=${INFLUX_MODE}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${DEFULT_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUX_TOKEN}
+      - DOCKER_INFLUXDB_INIT_RETENTION=1h
+    volumes:
+      - ./influxdb/setup:/docker-entrypoint-initdb.d
+      - ./influxdb/templates:/tmp/templates
+    networks:
+      - influxdb
+    env_file: 
+      - .env
+
+  telegraf:
+    image: telegraf:1.23.4
+    container_name: docker-telegraf
+    entrypoint: "telegraf"
+    privileged: true
+    volumes:
+      - ./influxdb/telegraf.conf:/etc/telegraf/telegraf.conf
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - influxdb
+    networks:
+      - influxdb
+    env_file: 
+      - .env
+
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    privileged: true
+    ports:
+      - "6565:6565"
+    volumes:
+      - ./k6/scripts:/scripts
+      - ./results:/home/k6/results
+    sysctls:
+      - net.ipv4.tcp_tw_reuse=0
+      - net.ipv4.tcp_fin_timeout=15
+      - net.ipv4.ip_local_port_range=16384 65535
+      - net.ipv4.tcp_rmem=65536 262144 524288
+      - net.ipv4.tcp_wmem=65536 262144 524288
+    env_file: 
+      - .env
+    networks:
+      - k6
+
+  mock-server-a:
+    image: nginx:latest
+    container_name: mock-server-a
+    privileged: true
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8081:80"
+    sysctls:
+      - net.ipv4.tcp_tw_reuse=0
+      - net.ipv4.tcp_fin_timeout=15
+      - net.ipv4.ip_local_port_range=16384 65535
+      - net.ipv4.tcp_rmem=65536 262144 524288
+      - net.ipv4.tcp_wmem=65536 262144 524288
+    networks:
+      - mock-server
+
+  mock-server-b:
+    image: nginx:latest
+    container_name: mock-server-a
+    privileged: true
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8082:80"
+    sysctls:
+      - net.ipv4.tcp_tw_reuse=0
+      - net.ipv4.tcp_fin_timeout=15
+      - net.ipv4.ip_local_port_range=16384 65535
+      - net.ipv4.tcp_rmem=65536 262144 524288
+      - net.ipv4.tcp_wmem=65536 262144 524288
+    networks:
+      - mock-server
+
+
+networks:
+  influxdb:
+    driver: bridge
+  mock-server:
+    driver: bridge
+  k6:
+    driver: bridge
